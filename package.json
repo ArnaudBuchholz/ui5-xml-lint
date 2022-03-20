@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/ArnaudBuchholz/ui5-xml-lint#readme",
   "devDependencies": {
+    "@types/jest": "^27.4.1",
     "jest": "^27.5.1",
     "ts-node": "^10.7.0",
     "ts-standard": "^11.0.0",
@@ -31,5 +32,10 @@
     "@xmldom/xmldom": "^0.8.1",
     "commander": "^9.1.0",
     "xpath": "^0.0.32"
+  },
+  "ts-standard": {
+    "env": [
+      "jest"
+    ]
   }
 }
