@@ -1,0 +1,96 @@
+<?info src="https://github.com/ArnaudBuchholz/training-ui5con18-opa/blob/master/webapp/view/App.view.xml" ?>
+<?ui5 version="1.87.0" ?>
+<mvc:View
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns="sap.m"
+	xmlns:form="sap.ui.layout.form"
+	controllerName="sap.ui.demo.todo.controller.App"
+	displayBlock="true"
+>
+	<Shell>
+		<App>
+			<Page title="{i18n>page.title}" backgroundDesign="Solid">
+				<subHeader>
+					<Toolbar>
+						<SearchField id="searchTodoItemsInput" liveChange="onSearch" width="100%" />
+					</Toolbar>
+				</subHeader>
+				<content>
+					<Input id="addTodoItemInput" class="todoInput"
+						placeholder="{i18n>addTodoInput.placeholder}"
+						change="addTodo"
+						visible="{/AppConfigurationSet('NewItem')/Enable}"
+					/>
+					<List id="todoList"
+						items="{
+							path: '/TodoItemSet',
+							sorter: {
+								path: 'DueDate'
+							}
+						}"
+						mode="{= ${/AppConfigurationSet('ItemCompletion')/Enable} === false ? 'None' : 'MultiSelect' }"
+						growing="true"
+						growingScrollToLoad="true"
+						showNoData="true"
+						showSeparators="None"
+						rememberSelections="false"
+						noDataText="{i18n>list.nodata}"
+						selectionChange="onSelectionChange">
+						<ObjectListItem
+							class="todoListItem"
+							selected="{Completed}"
+							busyIndicatorDelay="0"
+							icon="{path: '', formatter: '.getIcon'}"
+							intro="{path: '', formatter: '.getIntro'}"
+							title="{Title}"
+							type="{= ${/AppConfigurationSet('ItemEditing')/Enable} ? 'Detail' : 'Active' }"
+							detailPress="onItemPress"
+						/>
+					</List>
+					<Dialog id="todoItem"
+						visible="false"
+						title="{Title}"
+						icon="{path: '', formatter: '.getIconSafe'}"
+					>
+						<form:SimpleForm
+							layout="ResponsiveGridLayout"
+							labelSpanXL="3"
+							labelSpanL="3"
+							labelSpanM="3"
+							labelSpanS="12"
+							adjustLabelSpan="false"
+							emptySpanXL="4"
+							emptySpanL="4"
+							emptySpanM="4"
+							emptySpanS="0"
+							columnsXL="1"
+							columnsL="1"
+							columnsM="1"
+							singleContainerFullSize="false">
+							<Label text="{i18n>form.Title}" />
+							<Input id="title" type="text" value="{Title}" visible="{= !${Completed} }" />
+							<Label text="{i18n>form.DueDate}" />
+							<DateTimePicker id="dueDate" dateValue="{DueDate}" editable="{= !${Completed} }" />
+							<Label text="{i18n>form.CompletionDate}" visible="{Completed}" />
+							<DateTimePicker id="completionDate" dateValue="{CompletionDate}" editable="false" visible="{Completed}" />
+						</form:SimpleForm>
+						<beginButton>
+							<Button id="btnOK" press="onFormOK" text="{i18n>form.OK}" type="Accept" visible="{= !${Completed} }" />
+						</beginButton>
+						<endButton>
+							<Button id="btnCancel" press="onFormCancel" text="{i18n>form.Cancel}" />
+						</endButton>
+					</Dialog>
+				</content>
+				<footer>
+					<OverflowToolbar>
+						<ToolbarSpacer />
+						<SegmentedButton id="filters" selectedKey="all" select="onFilter" class="sapMSegmentedButtonNoAutoWidth" />
+						<ToolbarSpacer />
+						<Button id="clearCompleted" visible="{/AppConfigurationSet('ClearCompleted')/Enable}" icon="sap-icon://delete" text="{i18n>button.clearCompleted}" press="clearCompleted" />
+					</OverflowToolbar>
+				</footer>
+			</Page>
+		</App>
+	</Shell>
+</mvc:View>
