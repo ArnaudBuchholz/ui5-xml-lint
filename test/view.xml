@@ -1,5 +1,5 @@
 <?info src="https://github.com/ArnaudBuchholz/training-ui5con18-opa/blob/master/webapp/view/App.view.xml" ?>
-<?ui5 version="1.87.0" ?>
+<?ui5 cdn="ui5.sap.com" version="1.87.0" ?>
 <mvc:View
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns="sap.m"
