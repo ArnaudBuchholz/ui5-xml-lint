@@ -2,7 +2,12 @@ import { download } from './download'
 import findCacheDir from 'find-cache-dir'
 import { readFile, writeFile, stat } from 'fs/promises'
 
-const aliases: Record<string, string> = {
+export enum Library {
+  ui5 = 'ui5',
+  openui5 = 'openui5'
+}
+
+export const aliases: Record<Library, string> = {
   ui5: 'https://ui5.sap.com',
   openui5: 'https://openui5.hana.ondemand.com'
 }
@@ -11,14 +16,13 @@ const latests: Record<string, string> = {}
 
 const join = (...parts: string[]): string => parts.map(part => part.endsWith('/') ? part.substring(0, part.length - 2) : part).join('/')
 
-export async function read (cdn: string, version = 'latest', namespace = '*'): Promise<object> {
+async function buildUI5Url (cdn: string, version: string): Promise<string> {
   if (!cdn.match(/^https?:\/\//)) {
-    cdn = aliases[cdn] ?? ''
+    cdn = aliases[cdn as Library] ?? ''
   }
   if (cdn === '') {
     throw new Error('Invalid cdn')
   }
-
   if (version === 'latest') {
     let latestVersion = latests[cdn]
     if (latestVersion === undefined) {
@@ -28,32 +32,38 @@ export async function read (cdn: string, version = 'latest', namespace = '*'): P
     }
     version = latestVersion
   }
-  cdn = join(cdn, version)
+  return join(cdn, version)
+}
 
-  const cache = findCacheDir({
-    name: cdn,
+async function cache<T> (ui5Url: string, name: string, build: () => Promise<T>): Promise<T> {
+  const getCache = findCacheDir({
+    name: ui5Url.replace(/:\/\/|\//g, '_'),
     create: true,
     thunk: true
   })
-  if (cache === undefined) {
-    throw new Error('Unable to allocate cache dir')
+  if (getCache === undefined) {
+    throw new Error('Unable to allocate cache folder')
   }
 
-  async function cached (rel: string): Promise<string> {
-    const fileName = cache!(rel)
-    try {
-      await stat(fileName)
-      return (await readFile(fileName)).toString()
-    } catch (e) {}
-    const content = await download(join(cdn, rel))
-    await writeFile(fileName, content)
-    return content
+  const fileName = getCache(name)
+  if (fileName === undefined) {
+    throw new Error('Unable to allocate cache filename')
   }
 
-  const allLibs = JSON.parse(await cached('discovery/all_libs'))
-  if (namespace === '*') {
-    return allLibs.all_libs.map((item: any) => item.entry)
-  }
+  try {
+    await stat(fileName)
+    return JSON.parse((await readFile(fileName)).toString())
+  } catch (e) {}
 
-  return {}
+  const content = await build()
+  await writeFile(fileName, JSON.stringify(content))
+  return content
+}
+
+export async function getNamespaces (cdn: string, version = 'latest'): Promise<string[]> {
+  const ui5Url: string = await buildUI5Url(cdn, version)
+  return cache(ui5Url, 'all_libs', async () => {
+    const allLibs = JSON.parse(await download(join(ui5Url, 'discovery/all_libs')))
+    return allLibs.all_libs.map(({ entry }: { entry: string }) => entry)
+  })
 }
