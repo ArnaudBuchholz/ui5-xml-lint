@@ -67,3 +67,10 @@ export async function getNamespaces (cdn: string, version = 'latest'): Promise<s
     return allLibs.all_libs.map(({ entry }: { entry: string }) => entry)
   })
 }
+
+export async function getApiRef (cdn: string, namespace: string, version = 'latest'): Promise<object> {
+  const ui5Url: string = await buildUI5Url(cdn, version)
+  return cache(ui5Url, namespace, async () => {
+    return JSON.parse(await download(join(ui5Url, `test-resources/${namespace.replace(/\./g, '/')}/designtime/apiref/api.json`)))
+  })
+}
