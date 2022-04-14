@@ -1,37 +1,17 @@
 import { download } from './download'
-import nock from 'nock'
+import { setupOpenUI5Nock } from './uit5-cache.spec'
 
 describe('download', () => {
-  beforeEach(() => {
-    nock('https://openui5.hana.ondemand.com')
-      .get('/1.99.0/discovery/all_libs')
-      .reply(200, {
-        all_libs: [{
-          entry: 'sap/f'
-        }, {
-          entry: 'sap/m'
-        }]
-      })
-
-    nock('http://openui5.hana.ondemand.com')
-      .get('/1.98.0/discovery/all_libs')
-      .reply(200, {
-        all_libs: [{
-          entry: 'sap/f'
-        }, {
-          entry: 'sap/m'
-        }]
-      })
-  })
+  beforeEach(setupOpenUI5Nock)
 
   it('handles HTTPS', async () => {
-    const response = await download('https://openui5.hana.ondemand.com/1.99.0/discovery/all_libs')
+    const response = await download('https://openui5.hana.ondemand.com/1.90.0/discovery/all_libs')
     const allLibs = JSON.parse(response)
-    expect(allLibs.all_libs.length).toStrictEqual(2)
+    expect(allLibs.all_libs.length).toStrictEqual(1)
   })
 
   it('handles HTTP', async () => {
-    const response = await download('http://openui5.hana.ondemand.com/1.98.0/discovery/all_libs')
+    const response = await download('http://openui5.hana.ondemand.com/1.100.1/discovery/all_libs')
     const allLibs = JSON.parse(response)
     expect(allLibs.all_libs.length).toStrictEqual(2)
   })
