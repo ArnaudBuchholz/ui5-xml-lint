@@ -1,6 +1,9 @@
 import { parse } from './parse'
+import { setupOpenUI5Nock } from './uit5-cache.spec'
 
 describe('parse', () => {
+  beforeEach(setupOpenUI5Nock)
+
   it('parses valid XML', async () => {
     const document = await parse(`<root attribute="123">
   <child />
