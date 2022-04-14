@@ -12,6 +12,22 @@ export const aliases: Record<Library, string> = {
   openui5: 'https://openui5.hana.ondemand.com'
 }
 
+interface UI5ApiRefSymbol {
+  kind: 'namespace' | 'class' | 'typedef'
+  name: string
+  basename: string
+  resource: string
+  module: string
+  static: boolean
+}
+
+export interface UI5ApiRef {
+  '$schema-ref': string
+  version: string
+  library: string,
+  symbols: UI5ApiRefSymbol[]
+}
+
 const latests: Record<string, string> = {}
 
 const join = (...parts: string[]): string => parts.map(part => part.endsWith('/') ? part.substring(0, part.length - 2) : part).join('/')
@@ -45,7 +61,7 @@ async function cache<T> (ui5Url: string, name: string, build: () => Promise<T>):
     throw new Error('Unable to allocate cache folder')
   }
 
-  const fileName = getCache(name)
+  const fileName = getCache(name.replace(/:\/\/|\//g, '_'))
   if (fileName === undefined) {
     throw new Error('Unable to allocate cache filename')
   }
@@ -68,9 +84,9 @@ export async function getNamespaces (cdn: string, version = 'latest'): Promise<s
   })
 }
 
-export async function getApiRef (cdn: string, namespace: string, version = 'latest'): Promise<object> {
+export async function getApiRef (cdn: string, namespace: string, version = 'latest'): Promise<UI5ApiRef> {
   const ui5Url: string = await buildUI5Url(cdn, version)
   return cache(ui5Url, namespace, async () => {
-    return JSON.parse(await download(join(ui5Url, `test-resources/${namespace.replace(/\./g, '/')}/designtime/apiref/api.json`)))
+    return JSON.parse(await download(join(ui5Url, `test-resources/${namespace}/designtime/apiref/api.json`))) as UI5ApiRef
   })
 }
