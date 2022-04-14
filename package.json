@@ -48,8 +48,9 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
+    "globalSetup": "./src/jest-setup.ts",
     "testPathIgnorePatterns": [
-      "dist\\"
+      "dist\\b"
     ],
     "collectCoverage": true
   }
